@@ -1,0 +1,1 @@
+export {default as Albumbox} from './albumbox';

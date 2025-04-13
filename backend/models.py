@@ -1,5 +1,6 @@
 #ORM
 from pickle import TRUE
+from re import S
 from sqlalchemy import INTEGER, Column, ForeignKey, Integer, String, create_engine, LargeBinary, DATETIME, UUID, TEXT, text
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 
@@ -16,6 +17,7 @@ class tblArtists(Base):
     country_of_origin = Column(String)
 
     Songs_to_Artists = relationship("tblSongs", back_populates="Songs_to_Artists", cascade="all, delete-orphan")
+    Artists_to_Albums = relationship("tblAlbums", back_populates="Artists_to_Albums", cascade="all, delete-orphan")
 
 #One Album -> Many Songs
 
@@ -27,8 +29,10 @@ class tblAlbums(Base):
     album_name = Column(String)
     release_date = Column(TEXT)
     copyright_owner = Column(String)
+    artistID = Column(Integer, ForeignKey("tblArtists.artistID"))
 
     Songs_to_Albums = relationship("tblSongs", back_populates="Songs_to_Albums", cascade="all, delete-orphan")
+    Artists_to_Albums = relationship("tblArtists", back_populates="Songs_to_Artists")
 
 class tblSongs(Base):
     __tablename__ = "tblSongs"
@@ -38,7 +42,7 @@ class tblSongs(Base):
     release_date = Column(TEXT)
     song_mp3_url = Column(TEXT, nullable=False)
     song_mp3_audio_path = Column(TEXT, nullable=True) #For downloads
-    song_len = Column(INTEGER)
+    song_len = Column(String) #In 00:00
     song_img_url = Column(TEXT) #Fine if its null as then its likely part of an album and when its null we fall back on the album cover
     artistID = Column(Integer, ForeignKey("tblArtists.artistID"))
     albumID = Column(Integer, ForeignKey("tblAlbums.albumID"), nullable=True)
