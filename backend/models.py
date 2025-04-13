@@ -32,7 +32,7 @@ class tblAlbums(Base):
     artistID = Column(Integer, ForeignKey("tblArtists.artistID"))
 
     Songs_to_Albums = relationship("tblSongs", back_populates="Songs_to_Albums", cascade="all, delete-orphan")
-    Artists_to_Albums = relationship("tblArtists", back_populates="Songs_to_Artists")
+    Artists_to_Albums = relationship("tblArtists", back_populates="Artists_to_Albums")
 
 class tblSongs(Base):
     __tablename__ = "tblSongs"
@@ -49,3 +49,9 @@ class tblSongs(Base):
 
     Songs_to_Artists = relationship("tblArtists", back_populates="Songs_to_Artists")
     Songs_to_Albums = relationship("tblAlbums", back_populates="Songs_to_Albums")
+
+class tblUser(Base):
+    __tablename__ = "tblUser"
+    userID = Column(Integer, primary_key=True, autoincrement=True)
+    userName = Column(String)
+    userIconLocal = Column(LargeBinary)

@@ -1,16 +1,16 @@
 #FASTAPI
 import select
-from fastapi import FastAPI, Query, middleware, Depends, Request, Response
+from fastapi import FastAPI, Query, middleware, Depends, Request, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 import pytubefix.contrib
 import pytubefix.contrib.channel
 import uvicorn
 
 from sqldb import create_db, LocalSession
-from models import tblAlbums, tblArtists, tblSongs
+from models import tblAlbums, tblArtists, tblSongs, tblUser
 from sqlalchemy.orm import Session
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import select, insert, update, delete, or_
 
 
 import os
@@ -63,6 +63,27 @@ async def returnDB():
 def indexroute():
     return {"message": "Welcome to the mp3 player api!"}
 
+@app.get("/getMe")
+def get_current_user(db: Session = Depends(returnDB)):
+    result = db.execute(select(tblUser.userIconLocal, tblUser.userName)).mappings().first()
+    print(result)
+    return result
+
+@app.put("/updateMe/uploadIcon")
+async def update_user(db: Session = Depends(returnDB), file: UploadFile = File(...)):
+    if file.size > 10000000:
+        return {"message": "We are sorry, but we don't accept files larger than 10MB"}
+    
+    the_user = db.query(tblUser).first()
+    if not the_user:
+        return {"message": "We are sorry, but we don't have a user to update, try signing in"}
+    
+    the_user.userIconLocal = await file.file.read()
+    db.commit()
+    db.refresh(the_user)
+
+    return FileResponse(the_user.userIconLocal, media_type="image/png", filename="userIcon.png")
+
 @app.get("/getSongs")
 def extractSongs(db: Session = Depends(returnDB)):
     #these songs will be mapped to components in the gui of the mp3 player - Album cover is fallover
@@ -76,11 +97,32 @@ def extractSongs(db: Session = Depends(returnDB)):
     return output
 
 @app.get("/search/items")
-def get_music_info(songName: str = Query(...), artistName: str = Query(...), albumName: str = Query(...), 
-                   db: Session = Depends(returnDB)):
-    results = db.query(tblArtists, tblAlbums, tblSongs)
+def get_music_info (songName: str | None = Query(None), artistName: str | None = Query(None), albumName: str | None = Query(None), db: Session = Depends(returnDB) ):
+    if not songName and not artistName and not albumName:
+        return {"reply": False, "msg": "You have not typed in anything, so nothing was outputted"}
 
-    return {"reply": True}
+    query = select(tblSongs.songID, 
+                   tblSongs.song_name, 
+                   tblSongs.song_mp3_url,
+
+                   tblArtists.artistID, 
+                   tblArtists.artist_name,
+
+                   tblAlbums.albumID, 
+                   tblAlbums.album_name, 
+                   tblAlbums.album_cover).join(tblSongs.Songs_to_Artists).outerjoin(tblSongs.Songs_to_Albums).filter(
+                    
+                    or_(tblArtists.artist_name.like(f"%{artistName}%"), 
+                        tblSongs.song_name.like(f"%{songName}%"), 
+                        tblAlbums.album_name.like(f"%{albumName}%"))
+                   )
+
+    result = db.execute(query).mappings().all()
+
+    if not result:
+        return {"reply": False, "msg": "It appears your search criteria may be too specific?"}
+    
+    return {"reply": True, "result": result}
 
 
 @app.get("/search/artists/{artistid}")

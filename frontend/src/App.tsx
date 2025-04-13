@@ -2,13 +2,13 @@
 import './styles/App.css'
 import { Route, Routes } from 'react-router-dom'
 
-import { LibraryPage, SeachPage, LandingPage } from './pages'
+import { LibraryPage, SearchPage, LandingPage } from './pages'
 function App() {
 
   return (
     <Routes>
       <Route path='/' element={<LandingPage></LandingPage>}></Route>
-      <Route path='/search' element={<SeachPage></SeachPage>}></Route>
+      <Route path='/search' element={<SearchPage></SearchPage>}></Route>
 
       <Route path='/library' element={<LibraryPage></LibraryPage>}></Route>
       <Route path='/library/artists'></Route>
