@@ -1,0 +1,47 @@
+
+.sidenav-container{
+    width: max-content;
+    height: 100%;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    top: 0;
+    bottom: 0;
+    border-right: 1px solid black;
+}
+
+*{
+    list-style: none;
+}
+
+.menu-top-btn svg{
+    padding: 1rem;
+}
+
+ul.menu-items{
+    padding: 0 ;
+    margin-top: 0;
+    margin-bottom: 2rem;
+
+    position: static;
+}
+
+
+
+li{
+    padding: 1rem;
+    
+}
+
+.user-icon{
+    height: auto;
+    margin: 0 auto;
+    border-radius: 5rem;
+}
+
+.icon-list-item{
+    width: 48px
+
+}

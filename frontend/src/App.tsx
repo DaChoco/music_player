@@ -3,11 +3,14 @@ import './styles/App.css'
 import { Route, Routes } from 'react-router-dom'
 
 import { LibraryPage, SearchPage, LandingPage } from './pages'
+import { Sidenav } from './components'
 import {CreateAudioContext} from './contexts/audioContext'
 function App() {
 
   return (
   <CreateAudioContext>
+    
+    <Sidenav></Sidenav>
     <Routes>
       <Route path='/' element={<LandingPage></LandingPage>}></Route>
       <Route path='/search' element={<SearchPage></SearchPage>}></Route>

@@ -2,10 +2,13 @@ import { SongTable } from "../components"
 import { useEffect, useState, useRef, use } from "react"
 import { useNavigate } from "react-router-dom"
 import { AudioContext, useAudioContext } from "../contexts/audioContext"
+import submitDownload from "../apicalls/submitDownload"
 import "../styles/Landing.css"
 
 function LandingPage(){
     const [arrofSongs, setArrofSongs] = useState([])
+    const [query, setQuery] = useState<string>("")
+    const [isloading, setIsloading] = useState<boolean>(false)
 
     const {audio, isPlaying, setIsPlaying} = useAudioContext()
 
@@ -25,8 +28,6 @@ function LandingPage(){
         }
         getLatestSongs()
 
-
-        console.log(isPlaying)
     },[])
 
     useEffect(() => {
@@ -66,15 +67,31 @@ function LandingPage(){
 
     return (
         <div className="landing-container">
+            {isloading && (
+                <div className="loading-container"></div>
+            )}
+            
 
             <h1 className="intro-text">Welcome to the Music Player</h1>
 
-            <form className="input-section">
+            <form className="input-section" onSubmit={async (e)=> {
+                e.preventDefault();
+                setIsloading(true);
+                await submitDownload(query, setArrofSongs); 
+                setIsloading(false)
+                setQuery("");
+                }}>
                 <div className="input-n-label">
+
                 <label htmlFor="YT-MP4">Please type in a valid URL</label>
-                <input type="text" className="url-to-music" id="YT-MP4" placeholder="Type a url" />
-                </div>
+                <div className="input-wrap">
+
+                <input type="text" className="url-to-music" id="YT-MP4" placeholder="Type a url" value={query} onChange={(e)=> setQuery(e.target.value)}/>
                 <button type="submit" className="submit-url">Submit</button>
+
+                </div>
+                </div>
+                
             </form>
 
             {arrofSongs.length > 0 && (<SongTable songs={arrofSongs}/>)}

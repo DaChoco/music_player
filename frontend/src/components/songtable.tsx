@@ -1,7 +1,7 @@
 import {default as playMusic} from '../apicalls/playMusic';  
 import { useAudioContext } from '../contexts/audioContext'; 
 
-function SongTable({ songs }: { songs: {
+type songtype = {
     song_name: string,
     artist_name: string,
     songID: number,
@@ -10,7 +10,9 @@ function SongTable({ songs }: { songs: {
     album_name: string,
     is_downloaded: boolean,
     song_len: string
-  }[] }) {
+}
+
+function SongTable( {songs} : {songs: songtype[]}) {
 
     const {audio, setAudio, isPlaying, setIsPlaying} = useAudioContext()
     
@@ -50,6 +52,8 @@ function SongTable({ songs }: { songs: {
                                 </div>
                             </td>
                         </tr>
+
+
                     ))}
                 </tbody>
             </table>
