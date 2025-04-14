@@ -3,9 +3,8 @@ import select
 from fastapi import FastAPI, Query, middleware, Depends, Request, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
-import pytubefix.contrib
-import pytubefix.contrib.channel
 import uvicorn
+
 
 from sqldb import create_db, LocalSession
 from models import tblAlbums, tblArtists, tblSongs, tblUser
@@ -15,15 +14,16 @@ from sqlalchemy import select, insert, update, delete, or_
 
 import os
 from pathlib import Path
-from io import BytesIO
+import datetime
+
 from pytubefix import YouTube
-import pytubefix
-import requests
 
 #SQL
 import sqlite3 as sql
 from mutagen.mp3 import MP3
+from mutagen.mp4 import MP4
 
+from aws import uploadImage, deleteImage
 
 def createConn():
     #Create a connection to the database
@@ -32,17 +32,14 @@ def createConn():
 
 def extractSongLength(file_path):
     #Extract the length of the song using mutagen
-    audio = MP3(file_path)
+    audio = MP4(file_path)
     seconds = int(audio.info.length)
-
-    minutes = seconds // 60
-    seconds = seconds % 60
-    return f"{minutes}:{seconds:02d}"
+    return str(datetime.timedelta(seconds=seconds))
 
 
 #SETUP
 app = FastAPI()
-ORIGINS = ['http://127.0.0.1:5173', 'http://152.110.15.239:0']
+ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173', 'http://152.110.15.239:0']
 app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 create_db()
 
@@ -69,12 +66,21 @@ def get_current_user(db: Session = Depends(returnDB)):
     print(result)
     return result
 
-@app.put("/updateMe/uploadIcon")
+@app.put("/updateMe/uploadIcon/Local")
 async def update_user(db: Session = Depends(returnDB), file: UploadFile = File(...)):
     if file.size > 10000000:
         return {"message": "We are sorry, but we don't accept files larger than 10MB"}
     
     the_user = db.query(tblUser).first()
+
+    os.makedirs("SongStorage", exist_ok=True)
+    folder = Path("SongStorage")
+
+    file_names = [f.name for f in folder.iterdir() if f.is_file()]
+    
+    if file.filename in file_names:
+        return {"message": "We are sorry, but you already have a file with this name. So we will not download it"}
+
     if not the_user:
         return {"message": "We are sorry, but we don't have a user to update, try signing in"}
     
@@ -84,6 +90,29 @@ async def update_user(db: Session = Depends(returnDB), file: UploadFile = File(.
 
     return FileResponse(the_user.userIconLocal, media_type="image/png", filename="userIcon.png")
 
+@app.put("/updateMe/uploadIcon/Cloud")
+async def update_user_cloud(db: Session = Depends(returnDB), file: UploadFile = File(...)):
+    if file.size > 10000000:
+        return {"message": "We are sorry, but we don't accept files larger than 10MB"}
+    
+    the_user = db.query(tblUser).first()
+    #Check if the user exists
+    if not the_user:
+        return {"message": "We are sorry, but we don't have a user to update, try signing in"}
+    
+    #Delete the old image from S3
+    if await deleteImage(the_user.userIconCloudurl, "simplemusicplayer-01") == False:
+        return {"message": "We are sorry, but we couldn't delete the old image from S3"}
+    
+    #Upload the new image to S3
+    url = await uploadImage(file.file, file.filename, "simplemusicplayer-01", "userIcons")
+    
+    the_user.userIconCloudurl = url
+    db.commit()
+    db.refresh(the_user)
+
+    return {"message": "User icon updated successfully", "url": url}
+
 @app.get("/getSongs")
 def extractSongs(db: Session = Depends(returnDB)):
     #these songs will be mapped to components in the gui of the mp3 player - Album cover is fallover
@@ -92,8 +121,9 @@ def extractSongs(db: Session = Depends(returnDB)):
                    tblSongs.release_date, 
                    tblSongs.song_mp3_audio_path, 
                    tblSongs.song_len, 
-                   tblArtists.artist_name, tblAlbums.album_cover).join(tblArtists, tblSongs.artistID == tblArtists.artistID)
+                   tblArtists.artist_name, tblAlbums.album_cover, tblSongs.song_img_url).join(tblArtists, tblSongs.Songs_to_Artists).outerjoin(tblAlbums, tblSongs.Songs_to_Albums).order_by(tblSongs.release_date.desc()).limit(10)
     output = db.execute(query).mappings().all()
+    
     return output
 
 @app.get("/search/items")
@@ -164,6 +194,7 @@ def download_song(yt_url: str = Query(...), db: Session = Depends(returnDB)):
     yt_stream.download(output_path="SongStorage", filename=filename)
 
     cleaned_duration = extractSongLength(path_str)
+    print(cleaned_duration)
 
     # Check if artist exists
     artist_id = db.execute(select(tblArtists.artistID).where(tblArtists.artist_name == yt.author)).scalars().first()
@@ -210,7 +241,7 @@ def download_song(yt_url: str = Query(...), db: Session = Depends(returnDB)):
     return output
 
 @app.get("/songs/downloads/streams")
-def stream_song_download(songName: str = Query(...), start: int = Query(..., default=0), db: Session = Depends(returnDB), request: Request = None):
+def stream_song_download(songName: str = Query(...), start: int = 0, db: Session = Depends(returnDB), request: Request = None):
     #This is meant to play songs that have been downloaded
     #It will be a stream endpoint that will stream the song to the client
 
@@ -258,6 +289,9 @@ def streamSongs():
     #It will be a stream endpoint that will stream the song to the client
 
     return {"message": "This is the stream endpoint"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host='localhost', port=8000, reload=True)
 
 
 

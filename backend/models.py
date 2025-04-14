@@ -1,7 +1,7 @@
 #ORM
 from pickle import TRUE
 from re import S
-from sqlalchemy import INTEGER, Column, ForeignKey, Integer, String, create_engine, LargeBinary, DATETIME, UUID, TEXT, text
+from sqlalchemy import INTEGER, Column, ForeignKey, Integer, String, create_engine, LargeBinary, DATETIME, UUID, TEXT, text, Boolean, DateTime, BOOLEAN
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 
 Base = declarative_base()
@@ -40,12 +40,17 @@ class tblSongs(Base):
     songID = Column(Integer, primary_key=True, autoincrement=True)
     song_name = Column(String)
     release_date = Column(TEXT)
+    
     song_mp3_url = Column(TEXT, nullable=False)
     song_mp3_audio_path = Column(TEXT, nullable=True) #For downloads
     song_len = Column(String) #In 00:00
     song_img_url = Column(TEXT) #Fine if its null as then its likely part of an album and when its null we fall back on the album cover
+    
     artistID = Column(Integer, ForeignKey("tblArtists.artistID"))
     albumID = Column(Integer, ForeignKey("tblAlbums.albumID"), nullable=True)
+    
+    is_downloaded = Column(BOOLEAN, default=False) # 0 = not downloaded, 1 = downloaded
+    is_favourite = Column(BOOLEAN, default=False) # 0 = not favourite, 1 = favourite
 
     Songs_to_Artists = relationship("tblArtists", back_populates="Songs_to_Artists")
     Songs_to_Albums = relationship("tblAlbums", back_populates="Songs_to_Albums")
@@ -55,3 +60,4 @@ class tblUser(Base):
     userID = Column(Integer, primary_key=True, autoincrement=True)
     userName = Column(String)
     userIconLocal = Column(LargeBinary)
+    userIconCloudurl = Column(TEXT)

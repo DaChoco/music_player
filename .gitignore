@@ -3,3 +3,4 @@ backend/SongStorage/*
 *.pyc
 .vscode
 backend/test.py
+*.env

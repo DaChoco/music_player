@@ -1,0 +1,60 @@
+.landing-container{
+    width: min(1100px, 100%); 
+    margin: 0 auto; 
+}
+
+.other-columns > *{
+    text-align: center;
+}
+
+.song-icon{
+    width: 15%;
+    height: auto;
+}
+
+.input-section{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1rem;
+}
+
+.song-info{
+    display: flex;
+    flex-direction: row;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+.other-columns{
+    width: 15%;
+}
+
+.input-n-label{
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+}
+
+.url-to-music{
+    margin: 1rem 0;
+    padding: 0.5rem;
+
+}
+
+.submit-url{
+    height: max-content;
+    width: 10%;
+    padding: 0.5rem;
+    margin: auto 0;
+}
+
+.audio-bar-container{
+    margin: 1rem auto;
+    width: 50%;
+
+}
+
+.audio-bar-container audio{
+    width: min(500px, 100%);
+}
