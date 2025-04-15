@@ -1,7 +1,9 @@
+
 import { SongTable } from "../components"
-import { useEffect, useState, useRef, use } from "react"
-import { useNavigate } from "react-router-dom"
-import { AudioContext, useAudioContext } from "../contexts/audioContext"
+import { getLatestSongs } from "../apicalls/getSongs"
+import { useEffect, useState, useRef } from "react"
+
+import { useAudioContext } from "../contexts/audioContext"
 import submitDownload from "../apicalls/submitDownload"
 import "../styles/Landing.css"
 
@@ -10,23 +12,25 @@ function LandingPage(){
     const [query, setQuery] = useState<string>("")
     const [isloading, setIsloading] = useState<boolean>(false)
 
-    const {audio, isPlaying, setIsPlaying} = useAudioContext()
+    const {audio, setIsPlaying, audioimg} = useAudioContext()
+    
+    
 
     const soundbar = useRef<HTMLAudioElement>(null)
 
+  
+
     useEffect(() => {
-        const getLatestSongs = async () => {
+        const handleSongExtract = async () => {
             try{
-                const response = await fetch("http://localhost:8000/getSongs", {method: "GET"})
-                const data = await response.json()
-                console.log(data)
+                const data = await getLatestSongs()
                 setArrofSongs(data)
             }
             catch (error)
             {console.log("Error fetching songs:", error)}
             
         }
-        getLatestSongs()
+        handleSongExtract()
 
     },[])
 
@@ -94,10 +98,13 @@ function LandingPage(){
                 
             </form>
 
-            {arrofSongs.length > 0 && (<SongTable songs={arrofSongs}/>)}
+            {arrofSongs?.length > 0 && (<SongTable songs={arrofSongs}/>)}
 
             <div className="audio-bar-container">
-                {audio !== undefined && (<audio src={audio ?? undefined} ref={soundbar} controls></audio>)}
+                <img src={audioimg ?? undefined} alt="" className="song-playing" />
+                {audio !== undefined && (
+                    <audio className="audio-bar" src={audio ?? undefined} ref={soundbar} controls ></audio>
+                )}
             </div>
 
      

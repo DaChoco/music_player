@@ -9,14 +9,14 @@ function App() {
 
   return (
   <CreateAudioContext>
+
     
-    <Sidenav></Sidenav>
     <Routes>
       <Route path='/' element={<LandingPage></LandingPage>}></Route>
       <Route path='/search' element={<SearchPage></SearchPage>}></Route>
 
       <Route path='/library' element={<LibraryPage></LibraryPage>}></Route>
-      <Route path='/library/favorites'></Route>
+      <Route path='/favorites'></Route>
 
       <Route path='/library/songs'></Route>
       <Route path='/library/songs/:songID/page'></Route> {/* This is the page for the song player */}
@@ -26,6 +26,7 @@ function App() {
 
 
     </Routes>
+    <Sidenav></Sidenav>
 </CreateAudioContext>
   )
 }

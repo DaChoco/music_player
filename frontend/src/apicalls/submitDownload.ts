@@ -1,7 +1,7 @@
 import { getLatestSongs } from "./getSongs"
 
 export default async function submitDownload(query: string, setArrofSongs: React.SetStateAction<any>){
-    const url = `http://localhost:8000/songs/downloads?yt_url=${encodeURIComponent(query)}`
+    const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/songs/downloads?yt_url=${encodeURIComponent(query)}`
 
     try{
         console.log("Starting download")
@@ -12,6 +12,10 @@ export default async function submitDownload(query: string, setArrofSongs: React
 
         if (!data){
             console.log("The request failed")
+            return
+        }
+
+        if (data.reply === "failure"){
             return
         }
         const latestSongs = await getLatestSongs()

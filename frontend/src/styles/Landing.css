@@ -1,5 +1,5 @@
 .landing-container{
-    width: min(1100px, 100%); 
+    width: min(1000px, 100%); 
     margin: 0 auto; 
 }
 
@@ -16,16 +16,29 @@
     border-collapse: collapse;
     border-radius: 1rem;
     padding: 1rem;
+    width: 100%;
+}
+
+
+
+.song-playing{
+    width: 20%;
 }
 
 tr:nth-child(odd){
-    background-color: #FFFFFF;
+    background-color: var(--odd-table-row);
 
 }
 
 tr:nth-child(even){
-    background-color: #dcdbdb;
+    background-color: var(--even-table-row);
 }
+
+.fake-even-row{
+    background-color: var(--even-table-row);
+}
+
+
 
 
 .input-section{
@@ -33,8 +46,12 @@ tr:nth-child(even){
     justify-content: space-around;
     align-items: center;
     padding: 1rem;
-    width: 70%;
+    width: 60%;
     margin: 0 auto;
+}
+
+.audio-bar{
+    border-radius: 0;
 }
 
 .song-info{
@@ -46,6 +63,7 @@ tr:nth-child(even){
 
 .song-info h3{
     margin: 1rem 1rem;
+    font-size: 1rem;
 }
 
 .other-columns{
@@ -60,22 +78,37 @@ tr:nth-child(even){
 }
 
 .url-to-music{
-    margin: 1rem 0;
-    padding: 0.5rem;
-    width: 80%;
+    margin: 1rem 0rem;
+    padding: 1rem;
+    width: 70%;
+    font-size: 1rem;
+    border-radius: 0.25rem;
     
 }
 
 .submit-url{
     height: max-content;
-    width: 10%;
-    padding: 0.5rem;
+    width: 20%;
+    padding: 1rem;
     margin: auto 0;
+    color: #ffffff;
+    background-color: #861f73;
+    border: none;
+    outline: none;
+    border-radius: 0.25rem;
+}
+
+input{ 
+    outline: none;
+    border: 1px solid var(--generic-text);
 }
 
 .audio-bar-container{
     margin: 1rem auto;
     width: 50%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 
 }
 
@@ -92,4 +125,51 @@ tr:nth-child(even){
 
     width: 5rem;
     height: 5rem;
+}
+
+@media only screen and (max-width: 768px) {
+    .song-table-container{
+        overflow: scroll;
+    }
+
+    .song-table{
+        border-collapse: separate;
+    }
+
+    .song-icon{
+        width: 10%;
+        height: auto;
+        border-radius: 0.25rem;
+    }
+
+    .song-info{
+        width: 100%;
+        overflow: hidden;
+        
+    
+    }
+
+    .song-info > h3{
+        font-size: 0.75rem;
+    }
+
+    .song-playing{
+        width: 30%;
+    }
+
+    .input-section{
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .url-to-music{
+        width: 50%;
+    }
+
+    .audio-bar-container{
+        width: 100%;
+    }
+    .main-column{
+        width: 50%;
+    }
 }

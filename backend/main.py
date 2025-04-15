@@ -13,6 +13,11 @@ from sqlalchemy import select, insert, update, delete, or_
 
 
 import os
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
+personal_ip = os.getenv("PERSONAL_IP")
+ipad_ip = os.getenv("iPad_IP")
 from pathlib import Path
 import datetime
 
@@ -30,16 +35,24 @@ def createConn():
     conn = sql.connect('music.db')
     return conn
 
-def extractSongLength(file_path):
+def extractSongLength(file_path: str):
     #Extract the length of the song using mutagen
-    audio = MP4(file_path)
+    print(file_path)
+
+    file_path = file_path.replace('"', '').replace("'", '')
+    file_path = file_path.replace(r"|", "")
+    file_path = file_path.replace(r":", "").replace("{", "").replace("}", "").replace("%", "")
+    print(file_path)
+    clean_path = Path(file_path.replace(r'\\\\', '\\').strip('"')).resolve()
+ 
+    print(clean_path)
+    audio = MP4(clean_path)
     seconds = int(audio.info.length)
     return str(datetime.timedelta(seconds=seconds))
 
-
 #SETUP
 app = FastAPI()
-ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173', 'http://152.110.15.239:0']
+ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173', f'http://{personal_ip}:5173', f'http://{ipad_ip}:0']
 app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 create_db()
 
@@ -53,6 +66,7 @@ async def returnDB():
         DB.close()
 
 # Add a new user
+
 
 
 
@@ -188,7 +202,7 @@ def download_song(yt_url: str = Query(...), db: Session = Depends(returnDB)):
     if filename in file_names:
         query = select(tblSongs.song_name, tblSongs.release_date, tblSongs.song_mp3_audio_path)
         output = db.execute(query).mappings().all()
-        return {"message": "User already downloaded this song.", "file": output}
+        return {"message": "User already downloaded this song.", "file": output, "reply": "failure"}
 
     path_str = os.path.join("SongStorage", filename)
     yt_stream.download(output_path="SongStorage", filename=filename)
@@ -247,15 +261,21 @@ def stream_song_download(songName: str = Query(...), start: int = 0, db: Session
 
     query = select(tblSongs.song_mp3_audio_path).where(tblSongs.song_name.like(f"%{songName}%"))
     output = db.execute(query).scalars().first()
+    output = output.replace(r"|", "").replace(r":", "").replace("{", "").replace("}", "").replace("%", "").replace(r"'", "").replace(r'"', "")
 
-    file_size = os.path.getsize(output)
+    try:
+        file_size = os.path.getsize(output)
+    except FileNotFoundError:
+        return {"message": "File not found"}
+    except Exception as e:
+        return {"message": f"An error occurred: {str(e)}"}
     range_header = request.headers.get('Range', None)
 
     def iterateFile(begin: int = 0):
         with open(output, mode="rb") as file_audio:
             file_audio.seek(begin)
             while True:
-                data = file_audio.read(1024)
+                data = file_audio.read(2048)
                 if not data:
                     break
                 yield data
@@ -291,7 +311,7 @@ def streamSongs():
     return {"message": "This is the stream endpoint"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host='localhost', port=8000, reload=True)
+    uvicorn.run(app, host='0.0.0.0', port=8000, reload=False)
 
 
 

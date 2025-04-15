@@ -5,6 +5,8 @@ type AudioContextType = {
     setAudio: React.Dispatch<React.SetStateAction<string | null>>;
     isPlaying: boolean;
     setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+    audioimg: string | null;
+    setAudioimg: React.Dispatch<React.SetStateAction<string | null >>;
 }
 
 export const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -15,9 +17,10 @@ export function CreateAudioContext({children}: {children: React.ReactNode}) {
 
     const [audio, setAudio] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [audioimg, setAudioimg] = useState<string | null>("")
 
     return(
-        <AudioContext.Provider value={{audio, setAudio, isPlaying, setIsPlaying}}>
+        <AudioContext.Provider value={{audio, setAudio, isPlaying, setIsPlaying, audioimg, setAudioimg}}>
             {children}
         </AudioContext.Provider>
     )
