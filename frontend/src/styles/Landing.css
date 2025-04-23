@@ -105,8 +105,8 @@ input{
 
 .audio-bar-container{
     margin: 1rem auto;
-    width: 50%;
     display: flex;
+    flex-wrap: nowrap;
     flex-direction: row;
     align-items: center;
 

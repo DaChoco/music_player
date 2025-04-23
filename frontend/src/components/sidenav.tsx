@@ -56,7 +56,7 @@ return(
                         <ul className="menu-items show-down">
                             <li>Username</li>
                             <li>____________</li>
-                            <li><Link to={"/profile"}>View My Profile</Link></li>
+                            <li><Link to={"/profile"} onClick={handleProfileinfo}>View My Profile</Link></li>
                             <li>Create Album Lists</li>
                             <li>Create Playlists</li>
                             <li><Link to={"https://github.com/DaChoco/music_player"}>Visit the GitHub</Link></li>

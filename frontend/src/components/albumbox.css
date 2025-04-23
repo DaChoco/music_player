@@ -1,0 +1,14 @@
+.album-cover{
+    width: 100%;
+    height: auto;
+    border-radius: 1rem;
+    margin: 0 auto;
+}
+
+.album-box{
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+}

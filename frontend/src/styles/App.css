@@ -89,7 +89,7 @@ li{
         width: 100%;
         height: max-content;
         flex-direction: row;
-        position: static;
+        position: fixed;
         bottom: 0;
         left: 0;
         flex-wrap: nowrap;
@@ -99,7 +99,7 @@ li{
         align-items: center;
         padding: 0;
         z-index: 9999;
-        overflow: visible;
+        overflow: scroll;
 
 
     }

@@ -21,7 +21,7 @@ ipad_ip = os.getenv("iPad_IP")
 from pathlib import Path
 import datetime
 
-from pytubefix import YouTube
+from pytubefix import YouTube, Playlist
 
 #SQL
 import sqlite3 as sql
@@ -188,29 +188,55 @@ def RegisterArtist(db: Session = Depends(returnDB), name: str = Query(...), dob:
 def download_song(yt_url: str = Query(...), db: Session = Depends(returnDB)):
     if yt_url is None:
         return {"message": "Apologies, but you haven't added a song"}
+    
+    if "/playlist" in yt_url:
+        #If the url is a playlist, we will get the playlist and download all the songs in it
+        yt = Playlist(yt_url)
+        for video in yt.videos:
+        
+            yt_stream = video.streams.filter(only_audio=True).first()
+            os.makedirs("SongStorage", exist_ok=True)
+            folder = Path("SongStorage")
+            filename = f"{video.title}.mp4"
 
-    yt = YouTube(yt_url)
+            file_names = [f.name for f in folder.iterdir() if f.is_file()]
 
-    yt_stream = yt.streams.filter(only_audio=True).first()
+            if filename in file_names:
+                #Skip this one since they have it already
+                continue
 
-    os.makedirs("SongStorage", exist_ok=True)
-    folder = Path("SongStorage")
-    filename = f"{yt.title}.mp4"
+            path_str = os.path.join("SongStorage", filename)
+            yt_stream.download(output_path="SongStorage", filename=filename)
 
-    file_names = [f.name for f in folder.iterdir() if f.is_file()]
+            cleaned_duration = extractSongLength(path_str)
+            print(cleaned_duration)
+    else:
 
-    if filename in file_names:
-        query = select(tblSongs.song_name, tblSongs.release_date, tblSongs.song_mp3_audio_path)
-        output = db.execute(query).mappings().all()
-        return {"message": "User already downloaded this song.", "file": output, "reply": "failure"}
+        yt = YouTube(yt_url)
 
-    path_str = os.path.join("SongStorage", filename)
-    yt_stream.download(output_path="SongStorage", filename=filename)
+        yt_stream = yt.streams.filter(only_audio=True).first()
 
-    cleaned_duration = extractSongLength(path_str)
-    print(cleaned_duration)
+        os.makedirs("SongStorage", exist_ok=True)
+        folder = Path("SongStorage")
+        filename = f"{yt.title}.mp4"
 
-    # Check if artist exists
+        file_names = [f.name for f in folder.iterdir() if f.is_file()]
+
+        if filename in file_names:
+            query = select(tblSongs.song_name, tblSongs.release_date, tblSongs.song_mp3_audio_path)
+            output = db.execute(query).mappings().all()
+            return {"message": "User already downloaded this song.", "file": output, "reply": "failure"}
+
+        path_str = os.path.join("SongStorage", filename)
+        yt_stream.download(output_path="SongStorage", filename=filename)
+
+        cleaned_duration = extractSongLength(path_str)
+        print(cleaned_duration)
+
+    #In case something goes wrong
+    if not yt:
+        return {"message": "Apologies, but we couldn't find the song you were looking for"}
+    # Check if artist exists - SQL ALCHEMY SECTION
     artist_id = db.execute(select(tblArtists.artistID).where(tblArtists.artist_name == yt.author)).scalars().first()
 
     if artist_id:
@@ -251,6 +277,8 @@ def download_song(yt_url: str = Query(...), db: Session = Depends(returnDB)):
                    tblSongs.song_mp3_audio_path, 
                    tblSongs.song_img_url)
     output = db.execute(query).mappings().all()
+
+    #END OF SQLALCHEMY SECTION
 
     return output
 
