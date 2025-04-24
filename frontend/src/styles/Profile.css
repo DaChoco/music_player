@@ -19,29 +19,44 @@
 }
 
 .profile-page-container{
-    width: min(720px, 100%);
+    width: 100dvw;
     height: 100%;
     margin: 0 auto;
+    display: grid;
   
 }
 
 .main-profile{
-    width: 7.5rem;
+    width: 10rem;
     position: absolute;
-    bottom: -15%;
-    left: 0;
+    bottom: -10%;
+    left: 1rem;
     border: 5px solid var(--body-background);
 }
 
 .profile-content-zone{
     display: grid;
-    grid-template-columns: min(300px, 50%) min(300px, 50%);
+    grid-template-columns: min(300px, 50%) min(300px, 50%) min(300px, 50%);
     grid-template-rows: 1fr 1fr;
     gap: 1rem;
     width: 90%;
     margin: 0 auto;
 }
 
+.update-container{
+    display: grid;
+}
+
+.user-input-update{
+    width: min(100%, 500px);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-input-update > input{
+    margin: 2rem 0;
+}
 @media only screen and (max-width: 768px) {
     .main-profile{
         width: 5rem;

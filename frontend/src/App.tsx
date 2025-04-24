@@ -2,7 +2,7 @@
 import './styles/App.css'
 import { Route, Routes } from 'react-router-dom'
 
-import { LibraryPage, SearchPage, LandingPage, ProfilePage } from './pages'
+import { LibraryPage, SearchPage, LandingPage, ProfilePage, UpdateProfile } from './pages'
 import { Sidenav } from './components'
 import {CreateAudioContext} from './contexts/audioContext'
 function App() {
@@ -10,7 +10,7 @@ function App() {
   return (
   <CreateAudioContext>
 
-    
+
     <Routes>
       <Route path='/' element={<LandingPage></LandingPage>}></Route>
       <Route path='/search' element={<SearchPage></SearchPage>}></Route>
@@ -19,6 +19,7 @@ function App() {
       <Route path='/favorites'></Route>
 
       <Route path='/profile' element={<ProfilePage></ProfilePage>}></Route>
+      <Route path='/profile/update' element={<UpdateProfile></UpdateProfile>}></Route>
 
       <Route path='/library/songs'></Route>
       <Route path='/library/songs/:songID/page'></Route> {/* This is the page for the song player */}
@@ -28,7 +29,7 @@ function App() {
 
 
     </Routes>
-    <Sidenav></Sidenav>
+    
 </CreateAudioContext>
   )
 }

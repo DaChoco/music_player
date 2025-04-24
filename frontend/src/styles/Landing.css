@@ -1,6 +1,7 @@
 .landing-container{
-    width: min(1000px, 100%); 
+    width: 100dvw; 
     margin: 0 auto; 
+    display: grid;
 }
 
 .other-columns > *{
@@ -160,6 +161,7 @@ input{
     .input-section{
         flex-direction: column;
         width: 100%;
+        padding: 0.5rem;
     }
 
     .url-to-music{
@@ -168,6 +170,7 @@ input{
 
     .audio-bar-container{
         width: 100%;
+        align-items: left;
     }
     .main-column{
         width: 50%;

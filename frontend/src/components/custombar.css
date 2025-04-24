@@ -1,19 +1,19 @@
 .controls{
 
-    width: 100%;
+    width: 90%;
     display: flex;
     flex-direction: column;
     align-items: center;
     align-content: center;
     justify-content: space-between;
-    position: absolute;
+
     min-height: 100%;
 }
 
 
 input.progress-bar{
     appearance: none;
-    width: 100vw1;
+    width: 90%;
     height: 16px;
     background-color: transparent;
     cursor: pointer;
@@ -32,9 +32,9 @@ input[type="range"]::-webkit-slider-runnable-track{
     -webkit-appearance: none;
     height: 16px;
     width: 16px;
-    background: #4caf50;
+    background: #6c2569;
     border-radius: 50%;
-    margin-top: -4px; /* Centers the thumb vertically */
+    margin-top: 0px; /* Centers the thumb vertically */
     cursor: pointer;
   
   }
@@ -49,7 +49,7 @@ input[type="range"]::-webkit-slider-runnable-track{
 
 .custom-bar{
     width: 100%;
-    position: relative;
+    grid-area: audio;
 }
 
 .custom-img-bar{
