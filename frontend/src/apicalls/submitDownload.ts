@@ -1,7 +1,7 @@
 import { getLatestSongs } from "./getSongs"
 
 export default async function submitDownload(query: string, setArrofSongs: React.SetStateAction<any>){
-    const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/songs/downloads?yt_url=${encodeURIComponent(query)}`
+    const url = `http://127.0.0.1:8000/songs/downloads?yt_url=${encodeURIComponent(query)}`
 
     try{
         console.log("Starting download")

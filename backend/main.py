@@ -2,7 +2,7 @@
 import select
 from fastapi import FastAPI, Query, middleware, Depends, Request, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 import uvicorn
 
 
@@ -13,6 +13,7 @@ from sqlalchemy import select, insert, update, delete, or_
 
 
 import os
+from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
@@ -50,10 +51,11 @@ def extractSongLength(file_path: str):
     seconds = int(audio.info.length)
     return str(datetime.timedelta(seconds=seconds))
 
+
 #SETUP
 app = FastAPI()
 ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173', f'http://{personal_ip}:5173', f'http://{ipad_ip}:0']
-app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 create_db()
 
 #END SETUP
@@ -74,21 +76,31 @@ async def returnDB():
 def indexroute():
     return {"message": "Welcome to the mp3 player api!"}
 
+import base64
 @app.get("/getMe")
 def get_current_user(db: Session = Depends(returnDB)):
-    result = db.execute(select(tblUser.userIconLocal, tblUser.userName)).mappings().first()
-    print(result)
-    return result
+    result = db.execute(select(tblUser.userIconCloudurl, tblUser.userName)).mappings().first()
 
-@app.put("/updateMe/uploadIcon/Local")
+    bytes_photo = db.execute(select(tblUser.userIconLocal)).scalars().first()
+    cloud_url = result["userIconCloudurl"]
+    username = result["userName"]
+   
+
+    icon_base64 = None
+    if bytes_photo:
+        icon_base64 = base64.b64encode(bytes_photo).decode('utf-8')
+    return {"userIconCloudurl": cloud_url, "userName": username, "userIconLocal": icon_base64}
+
+@app.put("/api/v1/updateMe/uploadIcon/Local")
 async def update_user(db: Session = Depends(returnDB), file: UploadFile = File(...)):
     if file.size > 10000000:
         return {"message": "We are sorry, but we don't accept files larger than 10MB"}
-    
-    the_user = db.query(tblUser).first()
 
-    os.makedirs("SongStorage", exist_ok=True)
-    folder = Path("SongStorage")
+    the_user = db.query(tblUser).first()
+    print(the_user.userName, the_user.userIconLocal)
+  
+    os.makedirs("userAssets", exist_ok=True)
+    folder = Path("userAssets")
 
     file_names = [f.name for f in folder.iterdir() if f.is_file()]
     
@@ -96,30 +108,37 @@ async def update_user(db: Session = Depends(returnDB), file: UploadFile = File(.
         return {"message": "We are sorry, but you already have a file with this name. So we will not download it"}
 
     if not the_user:
-        return {"message": "We are sorry, but we don't have a user to update, try signing in"}
+        return {"message": "We are sorry, but we don't have a user to update, try signing in", "output": {"file_names": file_names, "result": the_user}}
     
-    the_user.userIconLocal = await file.file.read()
+    the_user.userIconLocal = file.file.read()
     db.commit()
     db.refresh(the_user)
 
-    return FileResponse(the_user.userIconLocal, media_type="image/png", filename="userIcon.png")
+    return JSONResponse(content={"success": True, "content": the_user.userName, "message": "User Updated icon successfully."}, status_code=206)
 
-@app.put("/updateMe/uploadIcon/Cloud")
-async def update_user_cloud(db: Session = Depends(returnDB), file: UploadFile = File(...)):
+@app.put("/api/v1/updateMe/uploadIcon/Cloud")
+async def update_user_cloud(db: Session = Depends(returnDB), file: UploadFile = File(...), username: str = Query(default= ""), email: str = Query(default="")):
     if file.size > 10000000:
         return {"message": "We are sorry, but we don't accept files larger than 10MB"}
     
     the_user = db.query(tblUser).first()
+
+    if username:
+        the_user.userName = username
+        db.commit()
+        db.refresh(the_user)
+
+    print(email)
     #Check if the user exists
     if not the_user:
         return {"message": "We are sorry, but we don't have a user to update, try signing in"}
     
     #Delete the old image from S3
-    if await deleteImage(the_user.userIconCloudurl, "simplemusicplayer-01") == False:
+    if deleteImage(the_user.userIconCloudurl, "simplemusicplayer-01") == False:
         return {"message": "We are sorry, but we couldn't delete the old image from S3"}
     
     #Upload the new image to S3
-    url = await uploadImage(file.file, file.filename, "simplemusicplayer-01", "userIcons")
+    url = uploadImage(file.file, file.filename, "simplemusicplayer-01", "userIcons")
     
     the_user.userIconCloudurl = url
     db.commit()
@@ -303,7 +322,7 @@ def stream_song_download(songName: str = Query(...), start: int = 0, db: Session
         with open(output, mode="rb") as file_audio:
             file_audio.seek(begin)
             while True:
-                data = file_audio.read(2048)
+                data = file_audio.read(1024*8)
                 if not data:
                     break
                 yield data

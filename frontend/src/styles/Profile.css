@@ -57,6 +57,10 @@
 .user-input-update > input{
     margin: 2rem 0;
 }
+
+.user-input-update > *{
+    color: rgb(96, 92, 92);
+}
 @media only screen and (max-width: 768px) {
     .main-profile{
         width: 5rem;

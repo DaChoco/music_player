@@ -2,7 +2,8 @@
 
 export const getLatestSongs = async () => {
     try{
-        const response = await fetch(`http://${import.meta.env.VITE_PERSONAL_IP}:8000/getSongs`, {method: "GET"})
+        console.log(import.meta.env.VITE_PERSONAL_IP)
+        const response = await fetch(`http://127.0.0.1:8000/getSongs`, {method: "GET"})
         const data = await response.json()
         console.log(data)
 

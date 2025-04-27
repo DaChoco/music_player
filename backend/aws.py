@@ -17,6 +17,9 @@ def uploadImage(image_file, item_name, bucket_name, s3_directory):
         print("Server side: Uploading...")
         s3.upload_fileobj(image_file, bucket_name, f"{s3_directory}/{item_name}")
         print("Server side: Upload complete")
+        print(f"https://{bucket_name}.s3.af-south-1.amazonaws.com/{s3_directory}/{item_name}")
+        return f"https://{bucket_name}.s3.af-south-1.amazonaws.com/{s3_directory}/{item_name}"
+        
     except ClientError as e:
         print(f"Error uploading file: {e}")
         return None
@@ -24,9 +27,9 @@ def uploadImage(image_file, item_name, bucket_name, s3_directory):
         print(f"Credentials error: {e}")
         return None
 
-    return f"https://{bucket_name}.s3.af-south-1.amazonaws.com/{s3_directory}/{item_name}"
+    
 
-def deleteImage(url: str, bucket_name: str):
+async def deleteImage(url: str, bucket_name: str):
     #delete an image from S3 Bucket if user already has an icon. To save storage
 
     try:

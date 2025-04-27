@@ -17,7 +17,8 @@
     border-collapse: collapse;
     border-radius: 1rem;
     padding: 1rem;
-    width: 100%;
+    width: 90%;
+    margin: 0 auto;
 }
 
 
@@ -106,15 +107,12 @@ input{
 
 .audio-bar-container{
     margin: 1rem auto;
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: row;
-    align-items: center;
-
+    
 }
 
 .audio-bar-container audio{
-    width: min(500px, 100%);
+    width: min(500px, 80%);
+    margin: 0 auto;
 }
 
 .loading-container{
